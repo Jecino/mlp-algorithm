@@ -46,7 +46,7 @@ struct Solution{
 struct InfoInsercao{
     int noInserido;
     int arestaRemovida;
-    double custo;
+    double custoAcumulado;
 };
 
 //Genericas

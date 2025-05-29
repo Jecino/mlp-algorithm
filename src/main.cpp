@@ -47,23 +47,31 @@ int main(int argc, char* argv[]) {
     auto duration = duration_cast<milliseconds>(stop - start);
     
     cout << "Tempo de execução do algoritmo: " << duration.count() << "ms\n";
-    cout << "\nMelhor Sequência de todas | custo: "  << calcularCusto(data, bestOfAll.sequencia) << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
+
+    auto start2 = high_resolution_clock::now();
+    double custoSequencia = calcularCusto(data, bestOfAll.sequencia);
+    auto stop2 = high_resolution_clock::now();
+
+    auto duration2 = duration_cast<nanoseconds>(stop2 - start2);
+    cout << "Tempo do calculo: " << duration2.count() << "ns\n";
+
+    cout << "\nMelhor Sequência de todas | custo: "  << custoSequencia << " | bestOfAll.custo: " << bestOfAll.custo << "\n";
     printVector(bestOfAll.sequencia);
 
     return 0;
 }
-
+ 
 double calcularCusto(Data& data, vector<int>& v){
 
-    double custo = 0;
-    
-    //maneira de iterar sobre os valores do vector a partir de seu tamanho dado pela funcao size()
+    double custoAcumulado = 0;
+    int iteI = v.size() - 1;
+
     for(int i = 0; i < v.size() - 1; i++){
-
-        custo += data.getDistance(v[i], v[i+1]);
+        custoAcumulado += iteI * data.getDistance(v[i], v[i+1]);
+        iteI -= 1;
     }
-
-    return custo;
+    
+    return custoAcumulado;
 }
 
 Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data& data){
@@ -74,9 +82,9 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data
         Solution s = construcao(data, R);
         Solution best = s;
         
-/*         cout << "\nSequencia pós contrução" << "| custo: " << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << endl;
+        cout << "\nSequencia pós contrução" << "| custo: " << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << endl;
         printVector(s.sequencia);
-        cout << endl; */
+        cout << endl;
 
         //Matriz de subsequencias
         vector<vector<Subsequence>> sub_matrix(dimension, vector<Subsequence>(dimension));
@@ -118,7 +126,7 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data
 }
 
 bool compCustoInsercao(InfoInsercao &x, InfoInsercao &y){
-    return x.custo < y.custo;
+    return x.custoAcumulado < y.custoAcumulado;
 }
 
 Solution construcao(Data& data, vector<double> &R){

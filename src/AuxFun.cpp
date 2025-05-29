@@ -67,9 +67,44 @@ vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, v
     for(int a = 0; a < sequencia.size() - 1; a++){
         int i = sequencia[a];
         int j = sequencia[a+1];
+        int iteI = a, iteN = sequencia.size() - a; 
+        double custoAcumuladoI = 0, custoAcumuladoInserido = 0;
+
+        //Calcula o custo acumulado até o i, pois este não muda com a inserção
+        for(int v = 0; v < a; v++){
+            custoAcumuladoI += iteI * data.getDistance(sequencia[v], sequencia[v+1]);
+            iteI -= 1;
+        }
 
         for(auto k : CL){
-            custoInsercao[l].custo = data.getDistance(i, k) + data.getDistance(k, j) - data.getDistance(i, j);
+
+            for(int m = 0; m < sequencia.size(); m++){
+                
+                //Nas duas iterações que envolve o nó k, necessita tratamento especial por não estar inserido na sequencia
+                if(m == a){
+                    custoAcumuladoInserido += iteN * data.getDistance(i, k);
+                }
+
+                else if(m == a + 1){
+                    custoAcumuladoInserido += iteN * data.getDistance(k, j);
+                }
+
+                //Em valores de m menores que "a" calcula o custo remanescente
+                else{
+
+                    //Necessário reduzir o iterador pois a adição de uma operação irá desloca-lo fazendo que não represente mais a sequencia correta
+                    if(m > a + 1){
+                        custoAcumuladoInserido += iteN * data.getDistance(sequencia[m - 1], sequencia[m]);
+                    }
+                    else{
+                        custoAcumuladoInserido += iteN * data.getDistance(sequencia[m], sequencia[m+1]);
+                    }
+                }
+                //Apenas reduz o iterador se estiver calculando apos da posição do I para frente
+                if( m >= a ) iteN -= 1;
+            }
+
+            custoInsercao[l].custoAcumulado = custoAcumuladoI + custoAcumuladoInserido;
             custoInsercao[l].noInserido = k;
             custoInsercao[l].arestaRemovida = i;
             l++;
@@ -83,7 +118,7 @@ void inserirNaSolucao(Solution& s, InfoInsercao& noInserido){
     for(int i = 0; i < s.sequencia.size() - 1; i++){
         if(s.sequencia[i] == noInserido.arestaRemovida){
             s.sequencia.insert(s.sequencia.begin() + i + 1, noInserido.noInserido);
-            s.custo += noInserido.custo;
+            s.custo = noInserido.custoAcumulado;
             return;
         }
     }
@@ -105,7 +140,7 @@ bool bestImprovementSwap(Solution& s, vector<vector<Subsequence>> &subseq_matrix
             sigma1 = Subsequence::Concatenate(subseq_matrix[0][i - 1], subseq_matrix[j][i], data);
             sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[j + 1][n - 1], data);
 
-            cout << "s.custo: " << s.custo << " sigma2.C: " << sigma2.C << endl;
+            //cout << "s.custo: " << s.custo << " sigma2.C: " << sigma2.C << endl;
             if(sigma2.C < bestDelta){
                 bestDelta = sigma2.C;
                 best_i = i;
@@ -115,7 +150,6 @@ bool bestImprovementSwap(Solution& s, vector<vector<Subsequence>> &subseq_matrix
     }
 
     if(bestDelta < s.custo){
-        cin.get();
         swap(s.sequencia[best_i], s.sequencia[best_j]);
         s.custo = bestDelta;
         updateSubSequence(s, subseq_matrix, data);
