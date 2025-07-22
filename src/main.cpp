@@ -82,9 +82,9 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data
         Solution s = construcao(data, R);
         Solution best = s;
         
-        cout << "\nSequencia pós contrução" << "| custo: " << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << endl;
+/*         cout << "\nSequencia pós contrução" << "| custo: " << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << endl;
         printVector(s.sequencia);
-        cout << endl;
+        cout << endl; */
 
         //Matriz de subsequencias
         vector<vector<Subsequence>> sub_matrix(dimension, vector<Subsequence>(dimension));
@@ -97,9 +97,9 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data
             }
         }  */
 
-/*         cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia)  << " | s.custo: " << s.custo << "\n";
+        cout << "\nSequencia antes da busca local | custo: " << calcularCusto(data, s.sequencia)  << " | s.custo: " << s.custo << "\n";
         printVector(s.sequencia);
-        cout << "\n"; */
+        cout << "\n"; 
 
         int iterIls = 0;
         while(iterIls < maxIterIls){
@@ -117,9 +117,9 @@ Solution ILS(int maxIter, int maxIterIls, int dimension, vector<double>& R, Data
             bestOfAll = best;
         }
  
-/*         cout << "Sequência após busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
+        cout << "Sequência após busca local | custo: "  << calcularCusto(data, s.sequencia) << " | s.custo: " << s.custo << "\n";
         cout << "\n";
-        printVector(s.sequencia); */
+        printVector(s.sequencia);
     }
 
     return bestOfAll;
@@ -142,7 +142,10 @@ Solution construcao(Data& data, vector<double> &R){
         vector<InfoInsercao> custoInsercao = calcularCustoInsercao(data, parcial.sequencia, CL);
         sort(custoInsercao.begin(), custoInsercao.end(), compCustoInsercao);
 
-        int selecionado = rand() % ((int) ceil(alpha * custoInsercao.size()));
+        int limite = (int)ceil(alpha * custoInsercao.size());
+        if (limite == 0) limite = 1;
+        int selecionado = rand() % limite;
+
         inserirNaSolucao(parcial, custoInsercao[selecionado]);
         removeVector(CL, custoInsercao[selecionado].noInserido);
     }

@@ -65,50 +65,27 @@ vector<InfoInsercao> calcularCustoInsercao(Data& data, vector<int>& sequencia, v
 
     int l = 0;
     for(int a = 0; a < sequencia.size() - 1; a++){
+        vector<vector<Subsequence>> Sub_matrix(sequencia.size(), vector<Subsequence>(sequencia.size()));
         int i = sequencia[a];
-        int j = sequencia[a+1];
-        int iteI = a, iteN = sequencia.size() - a; 
-        double custoAcumuladoI = 0, custoAcumuladoInserido = 0;
 
-        //Calcula o custo acumulado até o i, pois este não muda com a inserção
-        for(int v = 0; v < a; v++){
-            custoAcumuladoI += iteI * data.getDistance(sequencia[v], sequencia[v+1]);
-            iteI -= 1;
-        }
+        for(int K : CL){
+            Solution tempSolution;
+            tempSolution.sequencia = sequencia;
+            tempSolution.sequencia.insert(tempSolution.sequencia.begin() + a + 1, K);
+            updateSubSequence(tempSolution, Sub_matrix, data);
 
-        for(auto k : CL){
-
-            for(int m = 0; m < sequencia.size(); m++){
-                
-                //Nas duas iterações que envolve o nó k, necessita tratamento especial por não estar inserido na sequencia
-                if(m == a){
-                    custoAcumuladoInserido += iteN * data.getDistance(i, k);
+/*             for (int i = 0; i < sequencia.size(); i++){
+                for(int j = 0; j < sequencia.size(); j++){
+                    cout << "i: " << i << " | j: " << j << " | c: " << Sub_matrix[i][j].C << endl;
                 }
+            } */
 
-                else if(m == a + 1){
-                    custoAcumuladoInserido += iteN * data.getDistance(k, j);
-                }
-
-                //Em valores de m menores que "a" calcula o custo remanescente
-                else{
-
-                    //Necessário reduzir o iterador pois a adição de uma operação irá desloca-lo fazendo que não represente mais a sequencia correta
-                    if(m > a + 1){
-                        custoAcumuladoInserido += iteN * data.getDistance(sequencia[m - 1], sequencia[m]);
-                    }
-                    else{
-                        custoAcumuladoInserido += iteN * data.getDistance(sequencia[m], sequencia[m+1]);
-                    }
-                }
-                //Apenas reduz o iterador se estiver calculando apos da posição do I para frente
-                if( m >= a ) iteN -= 1;
-            }
-
-            custoInsercao[l].custoAcumulado = custoAcumuladoI + custoAcumuladoInserido;
-            custoInsercao[l].noInserido = k;
+            custoInsercao[l].custoAcumulado = Sub_matrix[0][Sub_matrix[0].size() - 1].C + Sub_matrix[Sub_matrix[0].size() - 1][0].C;
+            custoInsercao[l].noInserido = K;
             custoInsercao[l].arestaRemovida = i;
             l++;
         }
+        
     }
 
     return custoInsercao;
@@ -129,13 +106,12 @@ bool bestImprovementSwap(Solution& s, vector<vector<Subsequence>> &subseq_matrix
     double bestDelta = s.custo;
     int best_i, best_j;
     int n = s.sequencia.size() - 1;
+    int itrN = n;
 
     for(int i = 1; i < n; i++){
 
         for(int j = i + 1; j < n - 1; j++){
             Subsequence sigma1, sigma2;
-
-            //cout << "i: " << i << " j: " << j << endl;
 
             sigma1 = Subsequence::Concatenate(subseq_matrix[0][i - 1], subseq_matrix[j][i], data);
             sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[j + 1][n - 1], data);
@@ -152,6 +128,7 @@ bool bestImprovementSwap(Solution& s, vector<vector<Subsequence>> &subseq_matrix
     if(bestDelta < s.custo){
         swap(s.sequencia[best_i], s.sequencia[best_j]);
         s.custo = bestDelta;
+
         updateSubSequence(s, subseq_matrix, data);
         return true;
     }
